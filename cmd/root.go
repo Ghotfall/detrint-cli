@@ -14,6 +14,6 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		fmt.Printf("Failed to start app: %s", err)
+		fmt.Printf("Failed to start app: %v", err)
 	}
 }
