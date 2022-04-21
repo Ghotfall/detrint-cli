@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+	"log"
 )
 
 var startCmd = &cobra.Command{
@@ -10,8 +12,18 @@ var startCmd = &cobra.Command{
 	Short: "Start deployment",
 	Long:  "Start deployment using provided state file and inventory",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(statePath)
-		fmt.Println(inventoryPath)
+		logger, err := zap.NewProduction()
+		if err != nil {
+			log.Fatalf("Failed to create logger: %s", err)
+		}
+		defer func(logger *zap.Logger) {
+			err := logger.Sync()
+			if err != nil {
+				logger.Debug("Failed to sync logger", zap.Error(err))
+			}
+		}(logger)
+
+		logger.Info("Start is called!")
 	},
 }
 
@@ -26,7 +38,10 @@ func init() {
 		"",
 		"Path to state file (required)",
 	)
-	startCmd.MarkFlagRequired("state")
+	err := startCmd.MarkFlagRequired("state")
+	if err != nil {
+		fmt.Printf("An error occured: %s", err)
+	}
 
 	startCmd.Flags().StringVarP(
 		&inventoryPath,
@@ -35,7 +50,10 @@ func init() {
 		"",
 		"Path to inventory file (required)",
 	)
-	startCmd.MarkFlagRequired("inventory")
+	err = startCmd.MarkFlagRequired("inventory")
+	if err != nil {
+		fmt.Printf("An error occured: %s", err)
+	}
 
 	rootCmd.AddCommand(startCmd)
 }
